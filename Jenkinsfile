@@ -23,11 +23,17 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            steps {
-                sh 'trivy image --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}'
-            }
-        }
+       stage('Security Scan') {
+    steps {
+        sh '''
+            docker run --rm \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy:latest \
+                image --severity HIGH,CRITICAL \
+                ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
+    }
+}
 
         stage('Push') {
             steps {
