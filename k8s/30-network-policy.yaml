@@ -1,0 +1,20 @@
+# Бұл саясат Java подтарына Redis-ке қосылуға рұқсат береді.
+# Redis тек app=java-redis-app таңбасы бар подтардан TCP/6379 қабылдайды.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-java-to-redis
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: java-redis-app
+      ports:
+        - protocol: TCP
+          port: 6379

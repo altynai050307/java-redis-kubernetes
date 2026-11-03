@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-redis-app
+  labels:
+    app: java-redis-app
+    track: stable
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-redis-app
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: java-redis-app
+        track: stable
+    spec:
+      containers:
+        - name: java-redis-app
+          image: java-redis-app:1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: APP_VERSION
+              value: stable
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-redis-app
+spec:
+  selector:
+    app: java-redis-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
